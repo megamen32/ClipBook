@@ -140,8 +140,8 @@ bool getCurrentAndNextInputSources(TISInputSourceRef *current,
   std::vector<TISInputSourceRef> enabled_keyboard_sources;
   auto count = CFArrayGetCount(source_list);
   for (CFIndex i = 0; i < count; i++) {
-    auto source = static_cast<TISInputSourceRef>(
-        CFArrayGetValueAtIndex(source_list, i));
+    auto source = reinterpret_cast<TISInputSourceRef>(const_cast<void *>(
+        CFArrayGetValueAtIndex(source_list, i)));
     auto category = static_cast<CFStringRef>(
         TISGetInputSourceProperty(source, kTISPropertyInputSourceCategory));
     if (category == nullptr ||

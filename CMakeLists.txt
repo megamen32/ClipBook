@@ -75,5 +75,5 @@ set_property(TARGET mobrowser_lib PROPERTY CXX_STANDARD 20)
 target_include_directories(mobrowser_lib PRIVATE ${MOBROWSER_SDK_DIR}/include)
 
 if (OS_MAC)
-    target_link_libraries(mobrowser_lib PRIVATE "-framework Cocoa -framework Vision -framework IOKit -framework QuickLookThumbnailing -framework QuickLook -framework Quartz")
+    target_link_libraries(mobrowser_lib PRIVATE "-framework Cocoa -framework Vision -framework IOKit -framework QuickLookThumbnailing -framework QuickLook -framework Quartz -framework Carbon")
 endif ()
