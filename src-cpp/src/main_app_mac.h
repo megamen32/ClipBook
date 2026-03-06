@@ -3,6 +3,8 @@
 
 #include "main_app.h"
 
+#include <vector>
+
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
 #endif
@@ -55,7 +57,10 @@ class MainAppMac : public MainApp {
   void disablePasteNextItemShortcut() override;
   void enablePauseResumeShortcut() override;
   void disablePauseResumeShortcut() override;
+  void enableTextFormattingShortcuts() override;
+  void disableTextFormattingShortcuts() override;
   void updateOpenSettingsShortcut() override;
+  void changeInputSourceForSelectedText() override;
   std::string getUserDataDir() override;
   std::string getUpdateServerUrl() override;
   std::string getAppInfo(const std::string &app_path) override;
@@ -72,6 +77,22 @@ class MainAppMac : public MainApp {
   void showSystemAccessibilityPreferencesDialog();
 
  private:
+  enum class GlobalTextFormatAction {
+    kLowerCase = 0,
+    kUpperCase,
+    kCapitalizeWords,
+    kSentenceCase,
+    kRemoveEmptyLines,
+    kStripAllWhitespaces,
+    kTrimSurroundingWhitespaces,
+    kChangeInputSource,
+  };
+
+  bool shouldHandleGlobalTextFormatting() const;
+  bool transformSelectedTextInFrontApp(GlobalTextFormatAction action,
+                                       bool allow_input_source_only_switch);
+  static std::string formatText(const std::string &text, GlobalTextFormatAction action);
+
   void restoreWindowBounds();
   mobrowser::Size restoreWindowSize();
   void saveWindowBounds();
@@ -94,6 +115,8 @@ class MainAppMac : public MainApp {
   mobrowser::Shortcut pause_resume_shortcut_;
   mobrowser::Shortcut open_settings_shortcut_;
   mobrowser::Shortcut paste_next_item_shortcut_;
+  mobrowser::Shortcut change_input_source_shortcut_;
+  std::vector<mobrowser::Shortcut> text_format_shortcuts_;
   std::shared_ptr<ClipboardReaderMac> clipboard_reader_;
   bool should_activate_app_ = false;
 #ifdef __OBJC__

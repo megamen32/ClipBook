@@ -46,6 +46,8 @@ if (OS_MAC)
             src-cpp/src/app_settings_mac.mm
             src-cpp/src/clipboard_reader_mac.h
             src-cpp/src/clipboard_reader_mac.mm
+            src-cpp/src/text_formatter_mac.h
+            src-cpp/src/text_formatter_mac.mm
             src-cpp/src/quick_look_previewer_mac.h
             src-cpp/src/quick_look_previewer_mac.mm
     )

@@ -141,6 +141,14 @@ bool MainApp::init() {
       support_item_,
   });
 
+  change_input_source_item_ =
+      menu::Item("Change Input Source", [this](const CustomMenuItemActionArgs &args) {
+        changeInputSourceForSelectedText();
+      });
+  format_menu_ = menu::Menu("Format", {
+      change_input_source_item_,
+  });
+
   // Restore the application theme.
   setTheme(settings_->getTheme());
 
@@ -150,6 +158,8 @@ bool MainApp::init() {
   enablePauseResumeShortcut();
   // Register a global shortcut to paste the next item to the active app.
   enablePasteNextItemShortcut();
+  // Register global shortcuts for text formatting actions.
+  enableTextFormattingShortcuts();
   // Update the open settings shortcut.
   updateOpenSettingsShortcut();
 
@@ -790,6 +800,12 @@ void MainApp::initJavaScriptApi(const std::shared_ptr<mobrowser::JsObject> &wind
   window->putProperty("disablePasteNextItemShortcut", [this]() {
     disablePasteNextItemShortcut();
   });
+  window->putProperty("enableFormatTextShortcuts", [this]() {
+    enableTextFormattingShortcuts();
+  });
+  window->putProperty("disableFormatTextShortcuts", [this]() {
+    disableTextFormattingShortcuts();
+  });
   window->putProperty("updateOpenSettingsShortcut", [this]() {
     updateOpenSettingsShortcut();
   });
@@ -1420,6 +1436,12 @@ void MainApp::initJavaScriptApi(const std::shared_ptr<mobrowser::JsObject> &wind
   window->putProperty("getTrimSurroundingWhitespacesShortcut", [this]() -> std::string {
       return settings_->getTrimSurroundingWhitespacesShortcut();
   });
+  window->putProperty("saveChangeInputSourceShortcut", [this](std::string shortcut) -> void {
+      settings_->saveChangeInputSourceShortcut(shortcut);
+  });
+  window->putProperty("getChangeInputSourceShortcut", [this]() -> std::string {
+      return settings_->getChangeInputSourceShortcut();
+  });
   window->putProperty("saveToggleFilterShortcut", [this](std::string shortcut) -> void {
     settings_->saveToggleFilterShortcut(shortcut);
   });
@@ -1536,7 +1558,7 @@ void MainApp::initMainMenu() const {
     menu::Quit()
   });
 
-  auto app_menu_items = MenuItems({app_menu});
+  auto app_menu_items = MenuItems({app_menu, format_menu_});
   if (!app_->isProduction()) {
     app_menu_items.push_back(menu::View({
       menu::DevTools()
@@ -1616,6 +1638,7 @@ void MainApp::quit() {
   disableOpenAppShortcut();
   disablePauseResumeShortcut();
   disablePasteNextItemShortcut();
+  disableTextFormattingShortcuts();
 
   if (welcome_window_) {
     welcome_window_->close();
@@ -1727,6 +1750,8 @@ void MainApp::onLanguageChanged() {
   }
   about_item_->setTitle(i18n("app.menu.about"));
   help_menu_->setTitle(i18n("app.menu.help"));
+  format_menu_->setTitle(i18n("app.menu.format"));
+  change_input_source_item_->setTitle(i18n("app.menu.changeInputSource"));
   quit_item_->setTitle(i18n("app.menu.quit"));
 
   shortcuts_item_->setTitle(i18n("app.menu.helpMenu.shortcuts"));

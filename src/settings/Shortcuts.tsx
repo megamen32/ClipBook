@@ -4,6 +4,7 @@ import ShortcutInput from "@/settings/ShortcutInput";
 import { useTranslation } from 'react-i18next';
 import {
   prefGetCapitalizeShortcut,
+  prefGetChangeInputSourceShortcut,
   prefGetClearHistoryShortcut,
   prefGetCloseAppShortcut,
   prefGetCloseAppShortcut2,
@@ -27,6 +28,7 @@ import {
   prefGetZoomUIInShortcut,
   prefGetZoomUIOutShortcut,
   prefGetZoomUIResetShortcut, prefSetCapitalizeShortcut,
+  prefSetChangeInputSourceShortcut,
   prefSetClearHistoryShortcut,
   prefSetCloseAppShortcut,
   prefSetCloseAppShortcut2,
@@ -57,6 +59,7 @@ declare const enableOpenAppShortcut: () => void;
 declare const enablePauseResumeShortcut: () => void;
 declare const updateOpenSettingsShortcut: () => void;
 declare const enablePasteNextItemShortcut: () => void;
+declare const enableFormatTextShortcuts: () => void;
 
 export default function Shortcuts() {
   const { t } = useTranslation();
@@ -95,6 +98,7 @@ export default function Shortcuts() {
   const [removeEmptyLinesShortcut, setRemoveEmptyLinesShortcut] = useState(prefGetRemoveEmptyLinesShortcut());
   const [stripAllWhitespacesShortcut, setStripAllWhitespacesShortcut] = useState(prefGetStripAllWhitespacesShortcut());
   const [trimSurroundingWhitespacesShortcut, setTrimSurroundingWhitespacesShortcut] = useState(prefGetTrimSurroundingWhitespacesShortcut());
+  const [changeInputSourceShortcut, setChangeInputSourceShortcut] = useState(prefGetChangeInputSourceShortcut());
   const [toggleFilterShortcut, setToggleFilterShortcut] = useState(prefGetToggleFilterShortcut());
   const [quickLookShortcut, setQuickLookShortcut] = useState(prefGetQuickLookShortcut());
 
@@ -262,36 +266,49 @@ export default function Shortcuts() {
   function handleMakeLowerCaseShortcutChange(shortcut: string) {
     setMakeLowerCaseShortcut(shortcut)
     prefSetMakeLowerCaseShortcut(shortcut)
+    enableFormatTextShortcuts()
   }
 
   function handleMakeUpperCaseShortcutChange(shortcut: string) {
     setMakeUpperCaseShortcut(shortcut)
     prefSetMakeUpperCaseShortcut(shortcut)
+    enableFormatTextShortcuts()
   }
 
   function handleCapitalizeShortcutChange(shortcut: string) {
     setCapitalizeShortcut(shortcut)
     prefSetCapitalizeShortcut(shortcut)
+    enableFormatTextShortcuts()
   }
 
   function handleSentenceCaseShortcutChange(shortcut: string) {
     setSentenceCaseShortcut(shortcut)
     prefSetSentenceCaseShortcut(shortcut)
+    enableFormatTextShortcuts()
   }
 
   function handleRemoveEmptyLinesShortcutChange(shortcut: string) {
     setRemoveEmptyLinesShortcut(shortcut)
     prefSetRemoveEmptyLinesShortcut(shortcut)
+    enableFormatTextShortcuts()
   }
 
   function handleStripAllWhitespacesShortcutChange(shortcut: string) {
     setStripAllWhitespacesShortcut(shortcut)
     prefSetStripAllWhitespacesShortcut(shortcut)
+    enableFormatTextShortcuts()
   }
 
   function handleTrimSurroundingWhitespacesShortcutChange(shortcut: string) {
     setTrimSurroundingWhitespacesShortcut(shortcut)
     prefSetTrimSurroundingWhitespacesShortcut(shortcut)
+    enableFormatTextShortcuts()
+  }
+
+  function handleChangeInputSourceShortcutChange(shortcut: string) {
+    setChangeInputSourceShortcut(shortcut)
+    prefSetChangeInputSourceShortcut(shortcut)
+    enableFormatTextShortcuts()
   }
 
   return (
@@ -522,6 +539,12 @@ export default function Shortcuts() {
               <ShortcutInput shortcut={trimSurroundingWhitespacesShortcut}
                              defaultShortcut="ShiftLeft + MetaLeft + KeyM"
                              onSave={handleTrimSurroundingWhitespacesShortcutChange}/>
+            </div>
+            <div className="flex items-center justify-between space-x-20">
+              <span className="">{t('settings.shortcuts.changeInputSource')}</span>
+              <ShortcutInput shortcut={changeInputSourceShortcut}
+                             defaultShortcut="ShiftLeft + MetaLeft + Semicolon"
+                             onSave={handleChangeInputSourceShortcutChange}/>
             </div>
             <div className="grow"></div>
           </div>

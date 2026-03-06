@@ -237,6 +237,7 @@
       "removeEmptyLines": "Rimuovi righe vuote",
       "stripAllWhitespaces": "Rimuovi tutti gli spazi",
       "trimSurroundingWhitespaces": "Rimuovi spazi circostanti",
+      "changeInputSource": "Change input source",
       "quickLook": "Anteprima rapida",
       "pasteNextItemToActiveApp": "Incolla l'elemento successivo della cronologia"
     },
@@ -469,6 +470,8 @@
       "settings": "Impostazioni...",
       "quit": "Esci",
       "help": "Aiuto",
+      "format": "Format",
+      "changeInputSource": "Change Input Source",
       "helpMenu": {
         "shortcuts": "Scorciatoie da tastiera",
         "changelog": "Registro modifiche",

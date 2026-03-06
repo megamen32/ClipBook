@@ -95,6 +95,7 @@ NSString *prefSentenceCaseShortcut = @"app.sentence_case_shortcut";
 NSString *prefRemoveEmptyLinesShortcut = @"app.remove_empty_lines_shortcut";
 NSString *prefStripAllWhitespacesShortcut = @"app.strip_all_whitespaces_shortcut";
 NSString *prefTrimSurroundingWhitespacesShortcut = @"app.trim_surrounding_whitespaces_shortcut";
+NSString *prefChangeInputSourceShortcut = @"app.change_input_source_shortcut";
 NSString *prefToggleFilterShortcut = @"app.toggle_filter_shortcut";
 NSString *prefPasteNextItemShortcut = @"app.paste_next_item_shortcut";
 
@@ -1256,6 +1257,22 @@ std::string AppSettingsMac::getTrimSurroundingWhitespacesShortcut() {
     return {[shortcut UTF8String]};
   }
   return "ShiftLeft + MetaLeft + KeyM";
+}
+
+void AppSettingsMac::saveChangeInputSourceShortcut(std::string shortcut) {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  [defaults setObject:[NSString stringWithUTF8String:shortcut.c_str()]
+               forKey:prefChangeInputSourceShortcut];
+  [defaults synchronize];
+}
+
+std::string AppSettingsMac::getChangeInputSourceShortcut() {
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+  NSString *shortcut = [defaults objectForKey:prefChangeInputSourceShortcut];
+  if (shortcut != nil) {
+    return {[shortcut UTF8String]};
+  }
+  return "ShiftLeft + MetaLeft + Semicolon";
 }
 
 void AppSettingsMac::saveCopyOnDoubleClick(bool copy) {

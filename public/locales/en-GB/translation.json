@@ -237,6 +237,7 @@
       "removeEmptyLines": "Remove empty lines",
       "stripAllWhitespaces": "Strip all whitespaces",
       "trimSurroundingWhitespaces": "Trim surrounding whitespaces",
+      "changeInputSource": "Change input source",
       "quickLook": "Quick look",
       "pasteNextItemToActiveApp": "Paste next history item"
     },
@@ -469,6 +470,8 @@
       "settings": "Settings...",
       "quit": "Quit",
       "help": "Help",
+      "format": "Format",
+      "changeInputSource": "Change Input Source",
       "helpMenu": {
         "shortcuts": "Keyboard Shortcuts",
         "changelog": "Changelog",

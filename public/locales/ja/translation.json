@@ -185,6 +185,7 @@
       "removeEmptyLines": "空行を削除",
       "stripAllWhitespaces": "すべての空白を削除",
       "trimSurroundingWhitespaces": "前後の空白を削除",
+      "changeInputSource": "Change input source",
       "quickLook": "クイックルック",
       "pasteNextItemToActiveApp": "次の履歴アイテムをペースト"
     },
@@ -469,6 +470,8 @@
       "settings": "設定...",
       "quit": "終了",
       "help": "ヘルプ",
+      "format": "Format",
+      "changeInputSource": "Change Input Source",
       "helpMenu": {
         "shortcuts": "キーボードショートカット",
         "changelog": "変更履歴",

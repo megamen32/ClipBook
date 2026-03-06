@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <chrono>
 #include <memory>
 #include <thread>
 
@@ -327,6 +328,18 @@ void ClipboardReaderMac::copyToClipboardAfterMerge(std::string text) {
   t.detach();
 }
 
+void ClipboardReaderMac::suspendMonitoringFor(int milliseconds) {
+  auto now = std::chrono::steady_clock::now().time_since_epoch();
+  auto now_in_ms =
+      std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+  auto next_ignore_until = now_in_ms + milliseconds;
+  auto current = ignore_clipboard_until_ms_.load();
+  while (current < next_ignore_until &&
+         !ignore_clipboard_until_ms_.compare_exchange_weak(current,
+                                                           next_ignore_until)) {
+  }
+}
+
 void ClipboardReaderMac::addClipboardData(const std::shared_ptr<ClipboardData> &data) {
   if (app_->settings()->shouldPlaySoundOnCopy()) {
     [sound_ play];
@@ -411,6 +424,14 @@ void ClipboardReaderMac::mergeClipboardData(const std::shared_ptr<ClipboardData>
 }
 
 void ClipboardReaderMac::readClipboardData() {
+  auto now = std::chrono::steady_clock::now().time_since_epoch();
+  auto now_in_ms =
+      std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
+  if (now_in_ms < ignore_clipboard_until_ms_.load()) {
+    last_change_count_ = [[NSPasteboard generalPasteboard] changeCount];
+    return;
+  }
+
   // Let the user press Command+C second time and do not read the clipboard
   // if the time since the last Command+C is less than 0.5 seconds.
   if (app_->settings()->isCopyAndMergeEnabled()) {

@@ -3,6 +3,7 @@
 
 #include "main_app.h"
 
+#include <atomic>
 #include <mutex>
 
 #ifdef __OBJC__
@@ -42,6 +43,7 @@ class ClipboardReaderMac {
 
   void start(const std::shared_ptr<MainApp> &app);
   void copyToClipboardAfterMerge(std::string text);
+  void suspendMonitoringFor(int milliseconds);
 
  private:
 #ifdef __OBJC__
@@ -61,6 +63,7 @@ class ClipboardReaderMac {
   std::shared_ptr<ClipboardData> data_;
   long last_change_count_ = 0;
   bool copy_and_merge_requested_ = false;
+  std::atomic<long long> ignore_clipboard_until_ms_{0};
 #ifdef __OBJC__
   id monitor_ = nil;
   NSSound *sound_ = nil;

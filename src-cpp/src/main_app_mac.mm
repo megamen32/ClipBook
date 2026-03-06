@@ -2,6 +2,7 @@
 
 #include "active_app_observer.h"
 #include "quick_look_previewer_mac.h"
+#include "text_formatter_mac.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
@@ -11,6 +12,7 @@
 #include <sys/sysctl.h>
 #include <thread>
 
+#define KEY_CODE_C ((CGKeyCode)8)
 #define KEY_CODE_V ((CGKeyCode)9)
 #define KEY_CODE_RETURN ((CGKeyCode)36)
 #define KEY_CODE_TAB ((CGKeyCode)48)
@@ -337,6 +339,97 @@ void MainAppMac::disablePasteNextItemShortcut() {
   }
 }
 
+void MainAppMac::enableTextFormattingShortcuts() {
+  disableTextFormattingShortcuts();
+
+  auto shortcuts = app()->globalShortcuts();
+  auto register_shortcut =
+      [this, shortcuts](const std::string &shortcut_str,
+                        GlobalTextFormatAction action,
+                        bool allow_input_source_only_switch) {
+        auto shortcut = createShortcut(shortcut_str);
+        if (shortcut.key == KeyCode::UNKNOWN) {
+          return;
+        }
+        bool success = shortcuts->registerShortcut(
+            shortcut, [this, action, allow_input_source_only_switch](
+                          const Shortcut &) {
+              if (!shouldHandleGlobalTextFormatting()) {
+                return;
+              }
+              transformSelectedTextInFrontApp(action,
+                                              allow_input_source_only_switch);
+            });
+        if (!success) {
+          LOG(ERROR) << "Failed to register global shortcut: " << shortcut_str;
+          return;
+        }
+        text_format_shortcuts_.push_back(shortcut);
+      };
+
+  register_shortcut(settings_->getMakeLowerCaseShortcut(),
+                    GlobalTextFormatAction::kLowerCase, false);
+  register_shortcut(settings_->getMakeUpperCaseShortcut(),
+                    GlobalTextFormatAction::kUpperCase, false);
+  register_shortcut(settings_->getCapitalizeShortcut(),
+                    GlobalTextFormatAction::kCapitalizeWords, false);
+  register_shortcut(settings_->getSentenceCaseShortcut(),
+                    GlobalTextFormatAction::kSentenceCase, false);
+  register_shortcut(settings_->getRemoveEmptyLinesShortcut(),
+                    GlobalTextFormatAction::kRemoveEmptyLines, false);
+  register_shortcut(settings_->getStripAllWhitespacesShortcut(),
+                    GlobalTextFormatAction::kStripAllWhitespaces, false);
+  register_shortcut(settings_->getTrimSurroundingWhitespacesShortcut(),
+                    GlobalTextFormatAction::kTrimSurroundingWhitespaces, false);
+
+  auto shortcut_str = settings_->getChangeInputSourceShortcut();
+  change_input_source_shortcut_ = createShortcut(shortcut_str);
+  if (change_input_source_item_) {
+    change_input_source_item_->setShortcut(change_input_source_shortcut_);
+  }
+  if (change_input_source_shortcut_.key == KeyCode::UNKNOWN) {
+    return;
+  }
+
+  bool success = shortcuts->registerShortcut(
+      change_input_source_shortcut_, [this](const Shortcut &) {
+        if (!shouldHandleGlobalTextFormatting()) {
+          return;
+        }
+        transformSelectedTextInFrontApp(GlobalTextFormatAction::kChangeInputSource,
+                                        true);
+      });
+  if (!success) {
+    LOG(ERROR) << "Failed to register global shortcut: " << shortcut_str;
+    change_input_source_shortcut_ = mobrowser::Shortcut();
+    if (change_input_source_item_) {
+      change_input_source_item_->setShortcut(change_input_source_shortcut_);
+    }
+    return;
+  }
+  text_format_shortcuts_.push_back(change_input_source_shortcut_);
+}
+
+void MainAppMac::disableTextFormattingShortcuts() {
+  auto shortcuts = app()->globalShortcuts();
+  for (const auto &shortcut : text_format_shortcuts_) {
+    if (shortcut.key != KeyCode::UNKNOWN) {
+      shortcuts->unregisterShortcut(shortcut);
+    }
+  }
+  text_format_shortcuts_.clear();
+
+  change_input_source_shortcut_.key = KeyCode::UNKNOWN;
+  if (change_input_source_item_) {
+    change_input_source_item_->setShortcut(change_input_source_shortcut_);
+  }
+}
+
+void MainAppMac::changeInputSourceForSelectedText() {
+  transformSelectedTextInFrontApp(GlobalTextFormatAction::kChangeInputSource,
+                                  true);
+}
+
 void MainAppMac::updateOpenSettingsShortcut() {
   auto shortcut_str = settings_->getOpenSettingsShortcut();
   open_settings_shortcut_ = createShortcut(shortcut_str);
@@ -399,6 +492,141 @@ void MainAppMac::hide(bool force) {
   }
 }
 
+bool MainAppMac::shouldHandleGlobalTextFormatting() const {
+  auto frontmost_app = [[NSWorkspace sharedWorkspace] frontmostApplication];
+  if (frontmost_app == nil) {
+    return true;
+  }
+  NSString *frontmost_bundle_id = frontmost_app.bundleIdentifier;
+  NSString *clipbook_bundle_id = [[NSBundle mainBundle] bundleIdentifier];
+  if (frontmost_bundle_id != nil && clipbook_bundle_id != nil &&
+      [frontmost_bundle_id isEqualToString:clipbook_bundle_id]) {
+    return false;
+  }
+  return true;
+}
+
+std::string MainAppMac::formatText(const std::string &text,
+                                   GlobalTextFormatAction action) {
+  switch (action) {
+    case GlobalTextFormatAction::kLowerCase:
+      return text_formatter_mac::applyTextFormat(
+          text, text_formatter_mac::TextFormatAction::kLowerCase);
+    case GlobalTextFormatAction::kUpperCase:
+      return text_formatter_mac::applyTextFormat(
+          text, text_formatter_mac::TextFormatAction::kUpperCase);
+    case GlobalTextFormatAction::kCapitalizeWords:
+      return text_formatter_mac::applyTextFormat(
+          text, text_formatter_mac::TextFormatAction::kCapitalizeWords);
+    case GlobalTextFormatAction::kSentenceCase:
+      return text_formatter_mac::applyTextFormat(
+          text, text_formatter_mac::TextFormatAction::kSentenceCase);
+    case GlobalTextFormatAction::kRemoveEmptyLines:
+      return text_formatter_mac::applyTextFormat(
+          text, text_formatter_mac::TextFormatAction::kRemoveEmptyLines);
+    case GlobalTextFormatAction::kStripAllWhitespaces:
+      return text_formatter_mac::applyTextFormat(
+          text, text_formatter_mac::TextFormatAction::kStripAllWhitespaces);
+    case GlobalTextFormatAction::kTrimSurroundingWhitespaces:
+      return text_formatter_mac::applyTextFormat(
+          text, text_formatter_mac::TextFormatAction::kTrimSurroundingWhitespaces);
+    case GlobalTextFormatAction::kChangeInputSource:
+      return text;
+  }
+  return text;
+}
+
+bool MainAppMac::transformSelectedTextInFrontApp(
+    GlobalTextFormatAction action,
+    bool allow_input_source_only_switch) {
+  if (!isAccessibilityAccessGranted()) {
+    if (action == GlobalTextFormatAction::kChangeInputSource &&
+        allow_input_source_only_switch) {
+      return text_formatter_mac::selectNextInputSource();
+    }
+    return false;
+  }
+
+  clipboard_reader_->suspendMonitoringFor(2000);
+
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSArray<NSPasteboardItem *> *previous_items = [[pasteboard pasteboardItems] copy];
+  NSInteger change_count_before_copy = [pasteboard changeCount];
+
+  sendKey(Key::kCmdC);
+  usleep(120000);
+
+  bool has_selection = [pasteboard changeCount] != change_count_before_copy;
+  if (!has_selection) {
+    if (previous_items != nil) {
+      [previous_items release];
+    }
+    if (action == GlobalTextFormatAction::kChangeInputSource &&
+        allow_input_source_only_switch) {
+      return text_formatter_mac::selectNextInputSource();
+    }
+    return false;
+  }
+
+  NSString *selected_text = [pasteboard stringForType:NSPasteboardTypeString];
+  if (selected_text == nil) {
+    [pasteboard clearContents];
+    if (previous_items != nil && previous_items.count > 0) {
+      [pasteboard writeObjects:previous_items];
+    }
+    if (previous_items != nil) {
+      [previous_items release];
+    }
+    if (action == GlobalTextFormatAction::kChangeInputSource &&
+        allow_input_source_only_switch) {
+      return text_formatter_mac::selectNextInputSource();
+    }
+    return false;
+  }
+
+  auto selected_utf8 = [selected_text UTF8String];
+  if (selected_utf8 == nullptr) {
+    [pasteboard clearContents];
+    if (previous_items != nil && previous_items.count > 0) {
+      [pasteboard writeObjects:previous_items];
+    }
+    if (previous_items != nil) {
+      [previous_items release];
+    }
+    return false;
+  }
+
+  std::string input = selected_utf8;
+  bool switched_input_source = false;
+  std::string transformed;
+  if (action == GlobalTextFormatAction::kChangeInputSource) {
+    transformed =
+        text_formatter_mac::rotateTextInputSource(input, &switched_input_source);
+  } else {
+    transformed = formatText(input, action);
+  }
+
+  NSString *transformed_text = [NSString stringWithUTF8String:transformed.c_str()];
+  bool text_changed = transformed_text != nil &&
+                      ![transformed_text isEqualToString:selected_text];
+  if (text_changed) {
+    [pasteboard clearContents];
+    [pasteboard setString:transformed_text forType:NSPasteboardTypeString];
+    copyCustomClip(pasteboard);
+    sendKey(Key::kCmdV);
+  }
+
+  [pasteboard clearContents];
+  if (previous_items != nil && previous_items.count > 0) {
+    [pasteboard writeObjects:previous_items];
+  }
+  if (previous_items != nil) {
+    [previous_items release];
+  }
+
+  return text_changed || switched_input_source;
+}
+
 void MainAppMac::sendKey(MainApp::Key key) {
   CGEventSourceRef source =
       CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
@@ -406,7 +634,11 @@ void MainAppMac::sendKey(MainApp::Key key) {
   CGEventRef key_down = nullptr;
   CGEventRef key_up = nullptr;
 
-  if (key == Key::kCmdV) {
+  if (key == Key::kCmdC) {
+    key_down = CGEventCreateKeyboardEvent(source, KEY_CODE_C, TRUE);
+    CGEventSetFlags(key_down, kCGEventFlagMaskCommand);
+    key_up = CGEventCreateKeyboardEvent(source, KEY_CODE_C, FALSE);
+  } else if (key == Key::kCmdV) {
     key_down = CGEventCreateKeyboardEvent(source, KEY_CODE_V, TRUE);
     CGEventSetFlags(key_down, kCGEventFlagMaskCommand);
     key_up = CGEventCreateKeyboardEvent(source, KEY_CODE_V, FALSE);

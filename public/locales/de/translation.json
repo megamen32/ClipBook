@@ -237,6 +237,7 @@
       "removeEmptyLines": "Leere Zeilen entfernen",
       "stripAllWhitespaces": "Alle Leerzeichen entfernen",
       "trimSurroundingWhitespaces": "Umgebende Leerzeichen entfernen",
+      "changeInputSource": "Change input source",
       "quickLook": "Schnellvorschau",
       "pasteNextItemToActiveApp": "Nächstes Verlaufselement einfügen"
     },
@@ -469,6 +470,8 @@
       "settings": "Einstellungen...",
       "quit": "Beenden",
       "help": "Hilfe",
+      "format": "Format",
+      "changeInputSource": "Change Input Source",
       "helpMenu": {
         "shortcuts": "Tastenkombinationen",
         "changelog": "Änderungsprotokoll",

@@ -200,6 +200,8 @@ declare const saveStripAllWhitespacesShortcut: (shortcut: string) => void;
 declare const getStripAllWhitespacesShortcut: () => string;
 declare const saveTrimSurroundingWhitespacesShortcut: (shortcut: string) => void;
 declare const getTrimSurroundingWhitespacesShortcut: () => string;
+declare const saveChangeInputSourceShortcut: (shortcut: string) => void;
+declare const getChangeInputSourceShortcut: () => string;
 declare const saveToggleFilterShortcut: (shortcut: string) => void;
 declare const getToggleFilterShortcut: () => string;
 
@@ -845,6 +847,14 @@ export function prefGetTrimSurroundingWhitespacesShortcut() {
 
 export function prefSetTrimSurroundingWhitespacesShortcut(shortcut: string) {
   saveTrimSurroundingWhitespacesShortcut(shortcut)
+}
+
+export function prefGetChangeInputSourceShortcut() {
+  return getChangeInputSourceShortcut()
+}
+
+export function prefSetChangeInputSourceShortcut(shortcut: string) {
+  saveChangeInputSourceShortcut(shortcut)
 }
 
 export function prefGetToggleFilterShortcut() {

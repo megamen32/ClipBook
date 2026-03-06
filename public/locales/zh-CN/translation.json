@@ -185,6 +185,7 @@
       "removeEmptyLines": "删除空行",
       "stripAllWhitespaces": "删除所有空格",
       "trimSurroundingWhitespaces": "修剪周围空格",
+      "changeInputSource": "Change input source",
       "quickLook": "快速查看",
       "pasteNextItemToActiveApp": "粘贴下一个历史记录项目"
     },
@@ -469,6 +470,8 @@
       "settings": "设置...",
       "quit": "退出",
       "help": "帮助",
+      "format": "Format",
+      "changeInputSource": "Change Input Source",
       "helpMenu": {
         "shortcuts": "键盘快捷键",
         "changelog": "更新日志",

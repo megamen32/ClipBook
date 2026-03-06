@@ -275,6 +275,9 @@ class AppSettingsMac : public AppSettings {
   void saveTrimSurroundingWhitespacesShortcut(std::string shortcut) override;
   std::string getTrimSurroundingWhitespacesShortcut() override;
 
+  void saveChangeInputSourceShortcut(std::string shortcut) override;
+  std::string getChangeInputSourceShortcut() override;
+
   void saveToggleFilterShortcut(std::string shortcut) override;
   std::string getToggleFilterShortcut() override;
 

@@ -13,7 +13,8 @@
 class MainApp : public std::enable_shared_from_this<MainApp> {
  public:
   enum Key {
-    kCmdV = 0,
+    kCmdC = 0,
+    kCmdV,
     kReturn,
     kTab
   };
@@ -114,7 +115,10 @@ class MainApp : public std::enable_shared_from_this<MainApp> {
   virtual void disablePasteNextItemShortcut() = 0;
   virtual void enablePauseResumeShortcut() = 0;
   virtual void disablePauseResumeShortcut() = 0;
+  virtual void enableTextFormattingShortcuts() = 0;
+  virtual void disableTextFormattingShortcuts() = 0;
   virtual void updateOpenSettingsShortcut() = 0;
+  virtual void changeInputSourceForSelectedText() = 0;
   virtual std::string getUserDataDir() = 0;
   virtual std::string getUpdateServerUrl() = 0;
   virtual std::string getAppInfo(const std::string &app_path) = 0;
@@ -148,6 +152,8 @@ class MainApp : public std::enable_shared_from_this<MainApp> {
   std::shared_ptr<mobrowser::CustomMenuItem> about_item_;
   std::shared_ptr<mobrowser::CustomMenuItem> quit_item_;
   std::shared_ptr<mobrowser::CustomMenu> help_menu_;
+  std::shared_ptr<mobrowser::CustomMenu> format_menu_;
+  std::shared_ptr<mobrowser::CustomMenuItem> change_input_source_item_;
   std::shared_ptr<mobrowser::CustomMenuItem> shortcuts_item_;
   std::shared_ptr<mobrowser::CustomMenuItem> changelog_item_;
   std::shared_ptr<mobrowser::CustomMenuItem> feedback_item_;
